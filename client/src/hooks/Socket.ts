@@ -1,24 +1,22 @@
 import { useEffect, useRef, useState } from "react"
-import { io } from "socket.io-client"
+import { WebSocket } from "../Socket/socket";
 
 export const useSocket = () => {
 
-    const socket = useRef(io("http://localhost:8080/stream",{
-        autoConnect: false
-    }));
+    const socketObjRef = useRef(WebSocket.getInstance());
     console.log("abc")
 
     const roomRef = useRef<string>();
 
-    const [isConnected, setIsConnected] = useState(socket.current.connected);
+    const [isConnected, setIsConnected] = useState(socketObjRef.current.socket.connected);
 
 
     useEffect(() => {
-        socket.current.connect();
+        socketObjRef.current.socket.connect();
 
         function onConnect() {
           setIsConnected(true);
-        //   socket.current.emit("hi",1);
+        //   socketObjRef.current.socket.emit("hi",1);
         }
     
         function onDisconnect() {
@@ -30,40 +28,40 @@ export const useSocket = () => {
         console.log(value);
         }
     
-        socket.current.on('connect', onConnect);
-        socket.current.on('disconnect', onDisconnect);
-        socket.current.on('ping', onPingEvent);
-        socket.current.on('offer',(data)=>{
+        socketObjRef.current.socket.on('connect', onConnect);
+        socketObjRef.current.socket.on('disconnect', onDisconnect);
+        socketObjRef.current.socket.on('ping', onPingEvent);
+        socketObjRef.current.socket.on('offer',(data)=>{
             console.log(data);
         })
     
         return () => {
-            socket.current.disconnect();
-          socket.current.off('connect', onConnect);
-          socket.current.off('disconnect', onDisconnect);
-          socket.current.off('ping', onPingEvent);
+            socketObjRef.current.socket.disconnect();
+          socketObjRef.current.socket.off('connect', onConnect);
+          socketObjRef.current.socket.off('disconnect', onDisconnect);
+          socketObjRef.current.socket.off('ping', onPingEvent);
         };
       }, []);
 
       const joinRoom = (roomName: string) => {
         roomRef.current=roomName;
-        socket.current.emit("join-stream",roomName);
+        socketObjRef.current.socket.emit("join-stream",roomName);
       }
 
     //   const sendOffer = (offer: string) => {
-    //     socket.current.emit("offer",{
+    //     socketObjRef.current.socket.emit("offer",{
     //         offer, room
     //     })
     //   }
     const sendMessageToPeer = (msgIdf:string,message:string) => {
-        socket.current.emit(msgIdf,{
+        socketObjRef.current.socket.emit(msgIdf,{
             room:roomRef.current,
             message
         });
     }
 
     const connectListner = (event:string, handler: (data:any)=>void) => {
-        socket.current.on(event,handler);
+        socketObjRef.current.socket.on(event,handler);
     }
 
       return {
