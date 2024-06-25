@@ -1,0 +1,309 @@
+openapi: 3.0.0
+info:
+  title: Streaming Platform API
+  version: 1.0.0
+  description: API for managing streamers, streams, and viewers
+
+paths:
+  /streamers:
+    post:
+      summary: Create a new streamer (signup)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StreamerCreate'
+      responses:
+        '201':
+          description: Streamer created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Streamer'
+        '400':
+          description: Bad request
+
+    get:
+      summary: Get streamers list
+      responses:
+        '200':
+          description: A list of streamers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Streamer'
+
+  /streamers/{streamerId}:
+    parameters:
+      - name: streamerId
+        in: path
+        required: true
+        description: ID of the streamer to update
+        schema:
+          type: string
+    put:
+      summary: Update streamer details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StreamerUpdate'
+      responses:
+        '200':
+          description: Streamer updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Streamer'
+        '400':
+          description: Bad request
+        '404':
+          description: Streamer not found
+
+  /streams:
+    post:
+      summary: Create a new stream
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StreamCreate'
+      responses:
+        '201':
+          description: Stream created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stream'
+        '400':
+          description: Bad request
+
+    get:
+      summary: Get all streams
+      responses:
+        '200':
+          description: A list of all streams
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Stream'
+
+  /streams/{streamId}:
+    parameters:
+      - name: streamId
+        in: path
+        required: true
+        description: ID of the stream to delete
+        schema:
+          type: string
+    get:
+      summary: Get stream details
+      responses:
+        '200':
+          description: Details of the requested stream
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stream'
+        '404':
+          description: Stream not found
+
+    delete:
+      summary: Delete a stream
+      responses:
+        '204':
+          description: Stream deleted successfully
+        '404':
+          description: Stream not found
+
+  /streams/{streamId}/collaborators:
+    parameters:
+      - name: streamId
+        in: path
+        required: true
+        description: ID of the stream to manage collaborators
+        schema:
+          type: string
+    put:
+      summary: Add a collaborator to a stream
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StreamCollaborator'
+      responses:
+        '200':
+          description: Collaborator added successfully
+        '400':
+          description: Bad request
+        '404':
+          description: Stream not found
+
+    delete:
+      summary: Remove a collaborator from a stream
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StreamCollaborator'
+      responses:
+        '204':
+          description: Collaborator removed successfully
+        '404':
+          description: Stream or collaborator not found
+
+  /viewers:
+    post:
+      summary: Create a new viewer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViewerCreate'
+      responses:
+        '201':
+          description: Viewer created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Viewer'
+        '400':
+          description: Bad request
+
+  /viewers/{viewerId}:
+    parameters:
+      - name: viewerId
+        in: path
+        required: true
+        description: ID of the viewer to retrieve
+        schema:
+          type: string
+    get:
+      summary: Get viewer details
+      responses:
+        '200':
+          description: Details of the requested viewer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Viewer'
+        '404':
+          description: Viewer not found
+
+components:
+  schemas:
+    Streamer:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Streamer Id
+        personalInfo:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Name of the streamer
+            email:
+              type: string
+              format: email
+              description: Email address of the streamer
+        streams:
+          type: array
+          description: List of streams associated with the streamer
+          items:
+            $ref: '#/components/schemas/Stream'
+
+    StreamerCreate:
+      type: object
+      properties:
+        personalInfo:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Name of the streamer
+            email:
+              type: string
+              format: email
+              description: Email address of the streamer
+        streams:
+          type: array
+          description: List of streams associated with the streamer
+          items:
+            $ref: '#/components/schemas/Stream'
+
+    StreamerCollaboratorOption:
+      type: string
+      description: Collaborator option for streamers
+
+    StreamerUpdate:
+      type: object
+      properties:
+        personalInfo:
+          type: object
+          description: Updated personal information of the streamer
+
+    StreamCreate:
+      type: object
+      properties:
+        metadata:
+          type: object
+          description: Metadata related to the stream
+        host:
+          type: string
+          description: UID of the streamer hosting the stream
+
+    Stream:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the stream
+        metadata:
+          type: object
+          description: Metadata related to the stream
+        host:
+          type: string
+          description: UID of the streamer hosting the stream
+
+    StreamCollaborator:
+      type: object
+      properties:
+        collaboratorId:
+          type: string
+          description: ID of the collaborator to be added to the stream
+
+    ViewerCreate:
+      type: object
+      properties:
+        personalInfo:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Name of the viewer
+            email:
+              type: string
+              format: email
+              description: Email address of the viewer
+
+    Viewer:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the viewer
+        personalInfo:
+          type: object
+          description: Personal information of the viewer
