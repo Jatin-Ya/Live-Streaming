@@ -16,15 +16,24 @@ class StreamerSocket implements MySocketInterface {
         socket.on("hi",(val)=> console.log(val));
         socket.emit('ping', 'Hi! I am a live socket connection');
 
+        socket.on("disconnect",()=>{
+            const myId = Object.keys(this.uId_sId).filter((val)=>this.uId_sId[val]===socket.id)[0];
+            console.log("disconnecting ",myId);
+            const rooms = socket.rooms;
+            rooms.forEach((val)=> {
+                if (val!==socket.id){
+                    const idx = this.rId_uIds[val].indexOf(myId)
+                    if (idx>-1) this.rId_uIds[val].splice(idx);
+                    if (!this.rId_uIds[val].length)
+                        delete this.rId_uIds[val]
+                }
+            })
+            delete this.uId_sId[myId];
+        })
         socket.on("add-user",(data:any)=> {
             const {userId} = data;
             console.log("add-user ",userId)
             this.uId_sId[userId]=socket.id;
-        })
-        socket.on("disconnect",()=>{
-            const myId = Object.keys(this.uId_sId).filter((val)=>this.uId_sId[val]===socket.id)[0];
-            console.log("disconnecting ",myId);
-            delete this.uId_sId[myId];
         })
         socket.on("join-stream",(data:any)=> {
             const {room, userId} = data;
